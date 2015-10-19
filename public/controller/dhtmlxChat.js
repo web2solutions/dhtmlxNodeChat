@@ -75,6 +75,8 @@ var dhtmlxChat = {
 		dhtmlx.skin = self.settings.globalSkin || "dhx_skyblue";
 
 		configuration["icons_path"] = "icons/";
+		
+		configuration['container'] = document.body;
 
 		self.configuration[self.uid] = configuration;
 
