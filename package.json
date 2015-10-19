@@ -1,7 +1,7 @@
 {
   "name": "dhtmlx-node-chat",
   "version": "0.0.1",
-  "description": "Chat application built using Node and DHTMLX",
+  "description": "Chat application built using Node and DHTMLX and wrote using ES6",
   "main": "index.html",
   "scripts": {
     "test": "grunt test"
