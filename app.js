@@ -1,30 +1,45 @@
-var server = require('http').createServer()
-  , url = require('url')
-  , WebSocketServer = require('ws').Server
-  , wss = new WebSocketServer({ server: server })
-  , express = require('express')
-  , app = express()
-  , port = 4080;
+var express = require('express');
+var app = express();
+var expressWs = require('express-ws')(app);
+var app_name = 'dhtmlxNodeChat';
 
-app.get('/', function (req, res) {
+var redis = require('redis');
+var redis_client = redis.createClient();
+
+var port = 4080;
+ 
+
+redis_client.on('connect', function() {
+    console.log('redis connected');
+});
+
+app.use(function (req, res, next) {
+  //console.log('middleware');
+  req.testing = 'testing';
+  return next();
+});
+
+
+ 
+app.get('/', function(req, res, next){
   res.send('Hello World!');
+  //console.log('get route', req.testing);
+  res.end();
 });
 
-app.use('/socket',function (req, res) {
-  res.send({ msg: "hello" });
-});
 
-wss.on('connection', function connection(ws) {
-  var location = url.parse(ws.upgradeReq.url, true);
-  // you might use location.query.access_token to authenticate or share sessions
-  // or ws.upgradeReq.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
-
-  ws.on('message', function incoming(message) {
-    console.log('received: %s', message);
+ 
+app.ws('/', function(ws, req) {
+  ws.on('message', function(msg) {
+    console.log(msg);
   });
-
-  ws.send('something');
+  console.log('socket', req.testing);
 });
+ 
 
-server.on('request', app);
-server.listen(port, function () { console.log('Listening on ' + server.address().port)});
+var server = app.listen(port, function () {
+  var host = server.address().address;
+  var port = server.address().port;
+
+  console.log( app_name + ' is listening at http://%s:%s', host, port );
+});
