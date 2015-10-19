@@ -19,8 +19,9 @@
   "author": "José Eduardo Perotta Almeida",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.13.3"
-  }
+    "express": "^4.13.3",
+    "ws": "^0.8.0"
+  },
   "bugs": {
     "url": "https://github.com/web2solutions/dhtmlxNodeChat/issues"
   },
