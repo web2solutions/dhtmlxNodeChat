@@ -1,21 +1,28 @@
+
+/*
+* sudo npm init
+* npm install express --save
+* npm install express --save
+* npm install -g strongloop
+* npm install --save ws
+* npm install express-ws
+* npm install redis
+*/
+
 var express = require('express');
 var app = express();
 var expressWs = require('express-ws')(app);
 var app_name = 'dhtmlxNodeChat';
-
 var redis = require('redis');
-var redis_client = redis.createClient();
-
+var subscriber = redis.createClient();
+var publisher  = redis.createClient();
 var port = 4080;
-
 var users = [];
 
-var subject = 'wellcome';
+var def_channel = '#random';
 
 
-redis_client.on('connect', function() {
-	console.log('redis connected');
-});
+
 
 app.use( express.static( __dirname + '/public' ) );
 
@@ -31,9 +38,21 @@ app.get('/', function(req, res, next) {
 	res.end();
 });
 
+subscriber.on("message", function(channel, message) {
+	//message.channel = channel;
+	var aWss = expressWs.getWss('/');
+	aWss.clients.forEach(function (client) {
+		client.send( message );
+	});
+});
+
+
+
 app.ws('/', function(ws, req) {
 
 	var client_id = Math.random();
+
+	subscriber.subscribe(def_channel);
 
 	// client.set('client_', 'clientid');
 	//client.set('framework', 'AngularJS', function(err, reply) {
@@ -44,11 +63,12 @@ app.ws('/', function(ws, req) {
 		envelop = JSON.parse(envelop);
 		var msg = JSON.parse(envelop.msg);
 		msg.type = msg.type || 'message'; // disconnect, message, new_user
+		msg.channel = msg.channel || def_channel; // disconnect, message, new_user
 
 		msg.time = 10000000;
 	    msg.address = '';
 		msg.client_id = client_id;
-		msg.routing_key = subject;
+		
 		
 		if( msg.type == "new_username" )
 		{
@@ -57,6 +77,7 @@ app.ws('/', function(ws, req) {
 				msg.person.client_id = client_id;	
 				users.push( msg.person );
 				msg.users = users;
+				
 			}
 		}
 		else if( msg.type == "disconnect" )
@@ -71,15 +92,16 @@ app.ws('/', function(ws, req) {
 					msg.time = 10000000;
 				    msg.address = '';
 					msg.client_id = client_id;
-					msg.routing_key = subject;
 				}
 			});
 		}
 
-		var aWss = expressWs.getWss('/');
-		aWss.clients.forEach(function (client) {
-			client.send( JSON.stringify( msg ) );
-		});
+		publisher.publish(msg.channel, JSON.stringify( msg ));
+
+		//var aWss = expressWs.getWss('/');
+		//aWss.clients.forEach(function (client) {
+		//	client.send( JSON.stringify( msg ) );
+		//});
 
 		//console.log( 'sending ', JSON.stringify( msg ) );
 		//ws.send( JSON.stringify( msg ) );
@@ -95,7 +117,6 @@ app.ws('/', function(ws, req) {
 				msg.time = 10000000;
 			    msg.address = '';
 				msg.client_id = client_id;
-				msg.routing_key = subject;
 				ws.send(msg);
 			}
 		});*/
