@@ -19,11 +19,11 @@ redis_client.on('connect', function() {
 
 app.use( express.static( __dirname + '/public' ) );
 
-app.use( function(req, res, next) {
+//app.use( function(req, res, next) {
 	//console.log('middleware');
-	req.testing = 'testing';
-	return next();
-} );
+	//req.testing = 'testing';
+//	return next();
+//} );
 
 app.get('/', function(req, res, next) {
 	res.send('Hello World!');
@@ -75,7 +75,14 @@ app.ws('/', function(ws, req) {
 				}
 			});
 		}
-		ws.send( JSON.stringify( msg ) );
+
+		var aWss = expressWs.getWss('/');
+		aWss.clients.forEach(function (client) {
+			client.send( JSON.stringify( msg ) );
+		});
+
+		//console.log( 'sending ', JSON.stringify( msg ) );
+		//ws.send( JSON.stringify( msg ) );
 	});
 
 	ws.on('close', function() {
@@ -93,6 +100,7 @@ app.ws('/', function(ws, req) {
 			}
 		});*/
 		console.log('client id '+client_id+' is disconnected ');
+		console.log(users);
 	});
 	console.log('client id '+client_id+' is connected ');
 });
