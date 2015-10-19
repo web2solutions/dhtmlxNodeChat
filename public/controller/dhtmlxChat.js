@@ -221,7 +221,7 @@ var dhtmlxChat = {
 						
 					}
 					
-					if (data.msg) {
+					if (data.message) {
 						//console.log(data.msg);
 						//self._setStatusSocket("new message");
 						
@@ -235,7 +235,7 @@ var dhtmlxChat = {
 							"avatar": "<img width='18px' src='" + dhtmlxChat.application_path + "assets/"+self.getPersonByID( self.uid, data.client_id ).gender+".png'>",
 							"nick":self.getPersonByID( self.uid, data.client_id ).nick,
 							"gender": self.getPersonByID( self.uid, data.client_id ).gender,
-							"message": time + " - " + data.msg,
+							"message": time + " - " + data.message,
 						}, 0);	
 						
 						//notify(data.msg);
