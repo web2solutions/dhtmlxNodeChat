@@ -1,0 +1,28 @@
+{
+  "name": "dhtmlx-node-chat",
+  "version": "0.0.1",
+  "description": "Chat application built using Node and DHTMLX",
+  "main": "index.html",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web2solutions/dhtmlxNodeChat.git"
+  },
+  "keywords": [
+    "chat",
+    "websocket",
+    "dhtmlx",
+    "node"
+  ],
+  "author": "José Eduardo Perotta Almeida",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.3"
+  }
+  "bugs": {
+    "url": "https://github.com/web2solutions/dhtmlxNodeChat/issues"
+  },
+  "homepage": "https://github.com/web2solutions/dhtmlxNodeChat#readme"
+}
