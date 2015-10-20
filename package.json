@@ -25,5 +25,10 @@
   "bugs": {
     "url": "https://github.com/web2solutions/dhtmlxNodeChat/issues"
   },
-  "homepage": "https://github.com/web2solutions/dhtmlxNodeChat#readme"
+  "homepage": "https://github.com/web2solutions/dhtmlxNodeChat#readme",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-qunit": "^0.7.0",
+    "grunt-express": "^1.4.1"
+  }
 }
