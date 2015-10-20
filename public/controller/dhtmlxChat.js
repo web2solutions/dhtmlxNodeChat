@@ -634,7 +634,6 @@ var dhtmlxChat = {
 				{
 					self.socket.Send( {
 						type : 'message'// message, subscribe    -> mandatory
-						,routing_key : 'public_messages'
 						,message : user_message
 					} );
 					

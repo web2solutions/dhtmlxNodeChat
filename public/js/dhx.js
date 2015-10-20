@@ -1773,8 +1773,8 @@ var $dhx = {
 										});
 										return;
 									}
-									if(typeof m["routing_key"] === 'undefined')
-										m["routing_key"] = self.defaultRouting_key;
+									//if(typeof m["routing_key"] === 'undefined')
+									//	m["routing_key"] = self.defaultRouting_key;
 									if(typeof m["type"] === 'undefined')
 										m["type"] = "message";
 									//console.log( m );
@@ -1788,8 +1788,8 @@ var $dhx = {
 									if(m && m != null && m != "") {
 										m = JSON.stringify({
 											type: "message",
-											message: m,
-											routing_key: self.defaultRouting_key
+											message: m//,
+											//routing_key: self.defaultRouting_key
 										});
 									}
 									else {
