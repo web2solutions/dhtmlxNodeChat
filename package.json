@@ -1,7 +1,7 @@
 {
   "name": "dhtmlx-node-chat",
-  "version": "0.0.1",
-  "description": "Chat application built using Node and DHTMLX and wrote using ES6",
+  "version": "0.0.2",
+  "description": "Just a simple chat built using DHTMLX on client and Node.js (Express + ws) && Redis on back end",
   "main": "index.html",
   "scripts": {
     "test": "grunt test"
@@ -14,10 +14,11 @@
     "chat",
     "websocket",
     "dhtmlx",
-    "node"
+    "node",
+    "Redis"
   ],
   "author": "José Eduardo Perotta Almeida",
-  "license": "ISC",
+  "license": "GPL2.0",
   "dependencies": {
     "express": "^4.13.3",
     "ws": "^0.8.0"
