@@ -21,6 +21,9 @@ var total_users_online = 0;
 var def_channel = '#random';
 var users_online_list_name = 'dhtmlxNodeChat_users_online';
 
+var passport = require('passport');
+var Authentication = require('./authentication');
+
 try
 {
 	redis_client.del(users_online_list_name, function(err, reply) {
@@ -36,6 +39,17 @@ catch(e)
 
 }
 
+
+//app.use(express.cookieParser());
+//app.use(express.session({ secret: 'i am not telling you' }));
+//app.use(express.bodyParser());
+
+// Add csrf support
+//app.use(express.csrf({value: Authentication.csrf}));
+//app.use(function(req, res, next) {
+//   res.cookie('XSRF-TOKEN', req.session._csrf);
+//   next();
+//});
 
 app.use(express.static(__dirname + '/public'));
 
@@ -62,13 +76,12 @@ subscriber.on("message", function(channel, message) {
 
 
 app.ws('/', function(ws, req) {
-
 	var client_id = Math.random(),
-		person_entity = null;
+		person_entity = null,
+		publisher = redis.createClient(),
+		mstring = null;
 
 	subscriber.subscribe(def_channel);
-
-	var publisher = redis.createClient();
 
 	ws.on('message', function(envelope) {
 		envelope = JSON.parse(envelope);
@@ -86,7 +99,7 @@ app.ws('/', function(ws, req) {
 				msg.person.client_id = client_id;
 				person_entity = msg.person;
 
-				var mstring = JSON.stringify(person_entity);
+				mstring = JSON.stringify(person_entity);
 
 				redis_client.rpush([users_online_list_name, mstring], function(err, reply) {
 					// reply returns total users online
@@ -118,7 +131,7 @@ app.ws('/', function(ws, req) {
 					if (userObj.client_id == client_id) {
 						//users.splice(index, 1);
 
-						var mstring = JSON.stringify(userObj);
+						mstring = JSON.stringify(userObj);
 						var msg = {};
 						msg.type = 'disconnect'; // disconnect, message, new_user
 						msg.client_id = client_id;

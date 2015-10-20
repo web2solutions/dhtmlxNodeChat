@@ -1,6 +1,6 @@
 {
   "name": "dhtmlx-node-chat",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Just a simple chat built using DHTMLX on client and Node.js (Express + ws) && Redis on back end",
   "main": "index.html",
   "scripts": {
@@ -18,7 +18,7 @@
     "Redis"
   ],
   "author": "José Eduardo Perotta Almeida",
-  "license": "GPL2.0",
+  "license": "GPL-2.0",
   "dependencies": {
     "express": "^4.13.3",
     "ws": "^0.8.0"

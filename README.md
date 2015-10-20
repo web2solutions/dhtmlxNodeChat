@@ -42,6 +42,8 @@ Install dependencies:
 
     $ npm install redis
 
+    $ npm install passport
+
 
 #### Step 2
 
