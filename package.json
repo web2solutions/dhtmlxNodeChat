@@ -1,6 +1,6 @@
 {
   "name": "dhtmlx-node-chat",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Just a simple chat built using DHTMLX on client and Node.js (Express + ws) && Redis on back end",
   "main": "index.html",
   "scripts": {
