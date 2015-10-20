@@ -44,6 +44,8 @@ Install dependencies:
 
     $ npm install passport
 
+    $ npm install passport-local
+
     $ npm install lodash
 
 
