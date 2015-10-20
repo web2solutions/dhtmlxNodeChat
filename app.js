@@ -17,10 +17,10 @@ var publisher = redis.createClient();
 var redis_client = redis.createClient();
 var port = 4080;
 var users = [];
+var total_users_online = 0;
 
 var def_channel = '#random';
-var users_online_list_name = 'users_online';
-
+var users_online_list_name = 'dhtmlxNodeChat_users_online';
 
 try
 {
@@ -64,21 +64,14 @@ subscriber.on("message", function(channel, message) {
 
 app.ws('/', function(ws, req) {
 
-	var client_id = Math.random();
+	var client_id = Math.random(),
+		person_entity = null;
 
 	subscriber.subscribe(def_channel);
 
-	// client.set('client_', 'clientid');
-	//client.set('framework', 'AngularJS', function(err, reply) {
-	//  console.log(reply);
-	//});
-
-	ws.on('message', function(envelop) {
-
-		//console.log( req );
-
-		envelop = JSON.parse(envelop);
-		var msg = JSON.parse(envelop.msg);
+	ws.on('message', function(envelope) {
+		envelope = JSON.parse(envelope);
+		var msg = JSON.parse(envelope.msg);
 		msg.type = msg.type || 'message'; // disconnect, message, new_user
 		msg.channel = msg.channel || def_channel; // disconnect, message, new_user
 
@@ -86,10 +79,8 @@ app.ws('/', function(ws, req) {
 		msg.address = '';
 		msg.client_id = client_id;
 
-		var person_entity = null;
-
-
-		if (msg.type == "new_username") {
+		if (msg.type == "new_username") 
+		{
 			if (msg.person) {
 				msg.person.client_id = client_id;
 				person_entity = msg.person;
@@ -99,30 +90,23 @@ app.ws('/', function(ws, req) {
 				redis_client.rpush([users_online_list_name, mstring], function(err, reply) {
 					// reply returns total users online
 					//console.log(reply);
+					total_users_online = reply;
+					redis_client.lrange(users_online_list_name, 0, -1, function(err, reply) {
+						var users = [];
+						for (var index = 0; index < reply.length; index++) {
+							var user = JSON.parse(reply[index]);
+							users.push(user);
+						}
+						msg.users = users;
+						console.log('client id ' + client_id + ' is identified as ' + person_entity.nick );
+						publisher.publish(msg.channel, JSON.stringify(msg));
+					});
+
 				});
-
-				redis_client.lrange(users_online_list_name, 0, -1, function(err, reply) {
-					var users = [];
-					for (var index = 0; index < reply.length; index++) {
-						var user = JSON.parse(reply[index]);
-						users.push(user);
-					}
-					msg.users = users;
-					console.log('client id ' + client_id + ' is identified as ' + person_entity.nick );
-					publisher.publish(msg.channel, JSON.stringify(msg));
-				});
-
-				/*redis_client.hmset('users', msg.person, function(err, reply) {
-				    console.log(reply); // 3
-				});
-
-
-				redis_client.hmget( 'users', ['client_id'], function(err, node){
-				     console.log( node );
-				} );*/
-
 			}
-		} else if (msg.type == "disconnect") {
+		} 
+		else if (msg.type == "disconnect") 
+		{
 			redis_client.lrange(users_online_list_name, 0, -1, function(err, reply) {
 				var users = [];
 				for (var index = 0; index < reply.length; index++) {
