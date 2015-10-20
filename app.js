@@ -13,7 +13,6 @@ var expressWs = require('express-ws')(app);
 var app_name = 'dhtmlxNodeChat';
 var redis = require('redis');
 var subscriber = redis.createClient();
-var publisher = redis.createClient();
 var redis_client = redis.createClient();
 var port = 4080;
 var users = [];
@@ -68,6 +67,8 @@ app.ws('/', function(ws, req) {
 		person_entity = null;
 
 	subscriber.subscribe(def_channel);
+
+	var publisher = redis.createClient();
 
 	ws.on('message', function(envelope) {
 		envelope = JSON.parse(envelope);
@@ -139,34 +140,12 @@ app.ws('/', function(ws, req) {
 		} else {
 			publisher.publish(msg.channel, JSON.stringify(msg));
 		}
-
-
-
-		//var aWss = expressWs.getWss('/');
-		//aWss.clients.forEach(function (client) {
-		//	client.send( JSON.stringify( msg ) );
-		//});
-
-		//console.log( 'sending ', JSON.stringify( msg ) );
-		//ws.send( JSON.stringify( msg ) );
 	});
 
 	ws.on('close', function() {
-		/*users.forEach(function( userObj, index, array ){
-			if( userObj.client_id == client_id )
-			{
-				users.splice(index, 1);
-				var msg = JSON.parse(envelop.msg);
-				msg.type = 'disconnect'; // disconnect, message, new_user
-				msg.time = 10000000;
-			    msg.address = '';
-				msg.client_id = client_id;
-				ws.send(msg);
-			}
-		});*/
 		console.log('client id ' + client_id + ' is disconnected ');
-		
 	});
+
 	console.log('client id ' + client_id + ' is connected ');
 });
 
