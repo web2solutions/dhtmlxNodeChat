@@ -1,34 +1,48 @@
-
 /*
-* sudo npm init
-* npm install express --save
-* npm install express --save
-* npm install -g strongloop
-* npm install --save ws
-* npm install express-ws
-* npm install redis
-*/
-
+ * sudo npm init
+ * npm install express --save
+ * npm install express --save
+ * npm install -g strongloop
+ * npm install --save ws
+ * npm install express-ws
+ * npm install redis
+ */
 var express = require('express');
 var app = express();
 var expressWs = require('express-ws')(app);
 var app_name = 'dhtmlxNodeChat';
 var redis = require('redis');
 var subscriber = redis.createClient();
-var publisher  = redis.createClient();
+var publisher = redis.createClient();
+var redis_client = redis.createClient();
 var port = 4080;
 var users = [];
 
 var def_channel = '#random';
+var users_online_list_name = 'users_online';
 
 
+try
+{
+	redis_client.del(users_online_list_name, function(err, reply) {
+		
+		if( err ) throw err;
+
+		console.log(reply);
+		console.log('The online list users was restarted')
+	});
+}
+catch(e)
+{
+
+}
 
 
-app.use( express.static( __dirname + '/public' ) );
+app.use(express.static(__dirname + '/public'));
 
 //app.use( function(req, res, next) {
-	//console.log('middleware');
-	//req.testing = 'testing';
+//console.log('middleware');
+//req.testing = 'testing';
 //	return next();
 //} );
 
@@ -41,8 +55,8 @@ app.get('/', function(req, res, next) {
 subscriber.on("message", function(channel, message) {
 	//message.channel = channel;
 	var aWss = expressWs.getWss('/');
-	aWss.clients.forEach(function (client) {
-		client.send( message );
+	aWss.clients.forEach(function(client) {
+		client.send(message);
 	});
 });
 
@@ -60,43 +74,89 @@ app.ws('/', function(ws, req) {
 	//});
 
 	ws.on('message', function(envelop) {
+
+		//console.log( req );
+
 		envelop = JSON.parse(envelop);
 		var msg = JSON.parse(envelop.msg);
 		msg.type = msg.type || 'message'; // disconnect, message, new_user
 		msg.channel = msg.channel || def_channel; // disconnect, message, new_user
 
 		msg.time = 10000000;
-	    msg.address = '';
+		msg.address = '';
 		msg.client_id = client_id;
-		
-		
-		if( msg.type == "new_username" )
-		{
-			if( msg.person )
-			{
-				msg.person.client_id = client_id;	
-				users.push( msg.person );
-				msg.users = users;
-				
+
+		var person_entity = null;
+
+
+		if (msg.type == "new_username") {
+			if (msg.person) {
+				msg.person.client_id = client_id;
+				person_entity = msg.person;
+
+				var mstring = JSON.stringify(person_entity);
+
+				redis_client.rpush([users_online_list_name, mstring], function(err, reply) {
+					// reply returns total users online
+					//console.log(reply);
+				});
+
+				redis_client.lrange(users_online_list_name, 0, -1, function(err, reply) {
+					var users = [];
+					for (var index = 0; index < reply.length; index++) {
+						var user = JSON.parse(reply[index]);
+						users.push(user);
+					}
+					msg.users = users;
+					console.log('client id ' + client_id + ' is identified as ' + person_entity.nick );
+					publisher.publish(msg.channel, JSON.stringify(msg));
+				});
+
+				/*redis_client.hmset('users', msg.person, function(err, reply) {
+				    console.log(reply); // 3
+				});
+
+
+				redis_client.hmget( 'users', ['client_id'], function(err, node){
+				     console.log( node );
+				} );*/
+
 			}
-		}
-		else if( msg.type == "disconnect" )
-		{
-			users.forEach(function( userObj, index, array )
-			{
-				if( userObj.client_id == client_id )
-				{
-					users.splice(index, 1);
-					var msg = {};
-					msg.type = 'disconnect'; // disconnect, message, new_user
-					msg.time = 10000000;
-				    msg.address = '';
-					msg.client_id = client_id;
+		} else if (msg.type == "disconnect") {
+			redis_client.lrange(users_online_list_name, 0, -1, function(err, reply) {
+				var users = [];
+				for (var index = 0; index < reply.length; index++) {
+						var user = JSON.parse(reply[index]);
+						users.push(user);
 				}
+				users.forEach(function(userObj, index, array) {
+					if (userObj.client_id == client_id) {
+						//users.splice(index, 1);
+
+						var mstring = JSON.stringify(userObj);
+						var msg = {};
+						msg.type = 'disconnect'; // disconnect, message, new_user
+						msg.client_id = client_id;
+						//console.log('lrem ', mstring);
+
+						redis_client.lrem(users_online_list_name, 0, mstring, function(err, reply) {
+							if( reply == 1)
+							{
+								redis_client.lrange(users_online_list_name, 0, -1, function(err, reply) {
+									console.log('remaining online users');
+									console.log(reply);
+								});
+								publisher.publish(msg.channel, JSON.stringify(msg));
+							}
+						});	
+					}
+				});
 			});
+		} else {
+			publisher.publish(msg.channel, JSON.stringify(msg));
 		}
 
-		publisher.publish(msg.channel, JSON.stringify( msg ));
+
 
 		//var aWss = expressWs.getWss('/');
 		//aWss.clients.forEach(function (client) {
@@ -120,10 +180,10 @@ app.ws('/', function(ws, req) {
 				ws.send(msg);
 			}
 		});*/
-		console.log('client id '+client_id+' is disconnected ');
-		console.log(users);
+		console.log('client id ' + client_id + ' is disconnected ');
+		
 	});
-	console.log('client id '+client_id+' is connected ');
+	console.log('client id ' + client_id + ' is connected ');
 });
 
 
@@ -133,3 +193,5 @@ var server = app.listen(port, function() {
 
 	console.log(app_name + ' is listening at http://%s:%s', host, port);
 });
+
+module.exports = app;
