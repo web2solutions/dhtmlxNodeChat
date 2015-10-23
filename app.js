@@ -7,17 +7,43 @@
  * npm install express-ws
  * npm install redis
  */
+
+
+// =>>>>>> ENV
+var port = (process.env.VCAP_APP_PORT || 4080);
+//var host = (process.env.VCAP_APP_HOST || '0.0.0.0');
+
+var credentials;
+// Verifique se estamos no Bluemix ou localhost
+if (process.env.VCAP_SERVICES) {
+	// No Bluemix, leia as configurações de conexão da
+	// variável de ambiente VCAP_SERVICES
+	var env = JSON.parse(process.env.VCAP_SERVICES);
+	credentials = env['redis-2.6'][0]['credentials'];
+} else {
+	credentials = {
+		"host": "127.0.0.1",
+		"port": 6379
+	}
+}
+// =>>>>>> ENV
+
 var express = require('express');
 var app = express();
 var expressWs = require('express-ws')(app);
 var app_name = 'dhtmlxNodeChat';
 var redis = require('redis');
-var subscriber = redis.createClient();
-var redis_client = redis.createClient();
-var port = 4080;
+
+var subscriber = redis.createClient(credentials.port, credentials.host);
+var redis_client = redis.createClient(credentials.port, credentials.host);
+if ('password' in credentials) {
+
+	subscriber.auth(credentials.password);
+	redis_client.auth(credentials.password);
+}
+
 var users = [];
 var total_users_online = 0;
-
 var def_channel = '#random';
 var users_online_list_name = 'dhtmlxNodeChat_users_online';
 
@@ -160,6 +186,11 @@ app.ws('/', function(ws, req) {
 	});
 
 	console.log('client id ' + client_id + ' is connected ');
+});
+
+
+app.all('*', function(req, res) { 
+  res.redirect('/404.html'); 
 });
 
 
