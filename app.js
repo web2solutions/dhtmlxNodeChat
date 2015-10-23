@@ -1,16 +1,15 @@
 /*
  * sudo npm init
  * npm install express --save
- * npm install express --save
+ * npm install ws --save
  * npm install -g strongloop
- * npm install --save ws
  * npm install express-ws
  * npm install redis
  */
 
 
 // =>>>>>> ENV
-var port = (process.env.VCAP_APP_PORT || 4080);
+var port = process.env.VCAP_APP_PORT || 4080;
 //var host = (process.env.VCAP_APP_HOST || '0.0.0.0');
 
 var credentials;

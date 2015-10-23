@@ -18,6 +18,10 @@
     "node",
     "Redis"
   ],
+  "engines": {
+    "node": "0.12.x",
+    "npm": "2.10.x"
+  },
   "author": "José Eduardo Perotta Almeida",
   "license": "GPL-2.0",
   "dependencies": {

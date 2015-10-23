@@ -115,7 +115,7 @@ var dhtmlxChat = {
 			
 			self.socket = $dhx.socket.connect(
 			{
-				resource : 	"ws://localhost:4080/"
+				resource : 	"ws://" + window.location.host
 				//,pipe : "dhtmlxChat"
 				,onOpen : function( messageEvent ){
 					
