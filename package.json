@@ -4,8 +4,8 @@
   "description": "Just a simple chat built using DHTMLX on client and Node.js (Express + ws) && Redis on back end",
   "main": "index.html",
   "scripts": {
-    "test": "grunt test"
-    ,"start": "node app.js"
+    "test": "grunt test",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
@@ -25,13 +25,15 @@
   "author": "José Eduardo Perotta Almeida",
   "license": "GPL-2.0",
   "dependencies": {
+    "cfenv": "^1.0.3",
     "express": "^4.13.3",
-    "ws": "^0.8.0",
-    "redis": "^2.2.5",
+    "express-ws": "^1.0.0-rc.2",
+    "grunt-express": "^1.4.1",
+    "lodash": "^3.10.1",
     "passport": "^0.3.0",
     "passport-local": "^1.0.0",
-    "lodash": "^3.10.1",
-    "grunt-express": "^1.4.1"
+    "redis": "^2.2.5",
+    "ws": "^0.8.0"
   },
   "bugs": {
     "url": "https://github.com/web2solutions/dhtmlxNodeChat/issues"

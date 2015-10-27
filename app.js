@@ -1,30 +1,54 @@
+/*jslint devel: true, white: true, maxerr : 1000*/
+
 /*
  * sudo npm init
  * npm install express --save
  * npm install ws --save
  * npm install -g strongloop
- * npm install express-ws
- * npm install redis
+ * npm install express-ws --save
+ * npm install redis --save
+ * npm install cfenv --save
  */
 
 
+
 // =>>>>>> ENV
+var cfenv = require( 'cfenv' );
+var environment = cfenv.getAppEnv();
+console.log(process.env.VCAP_APP_PORT);
+console.log(process.env.VCAP_SERVICES);
+console.log(environment);
+
 var port = process.env.VCAP_APP_PORT || 4080;
 //var host = (process.env.VCAP_APP_HOST || '0.0.0.0');
 
 var credentials;
 // Verifique se estamos no Bluemix ou localhost
-if (process.env.VCAP_SERVICES) {
+if ( !environment.isLocal ) {
 	// No Bluemix, leia as configurações de conexão da
 	// variável de ambiente VCAP_SERVICES
-	var env = JSON.parse(process.env.VCAP_SERVICES);
-	credentials = env['redis-2.6'][0]['credentials'];
+	//var env = JSON.parse(process.env.VCAP_SERVICES);
+
+	if( environment.services['redis-2.6'] )
+	{
+		credentials = environment.services['redis-2.6'][0].credentials;
+	}
+	else if( environment.services['user-provided'] )
+	{
+		credentials = environment.services['user-provided'][0].credentials;
+	}
+
+	
 } else {
 	credentials = {
-		"host": "127.0.0.1",
-		"port": 6379
-	}
+		host: "127.0.0.1",
+		port: 6379
+	};
 }
+console.log(credentials);
+
+
+
 // =>>>>>> ENV
 
 var express = require('express');
@@ -33,35 +57,35 @@ var expressWs = require('express-ws')(app);
 var app_name = 'dhtmlxNodeChat';
 var redis = require('redis');
 
-var subscriber = redis.createClient(credentials.port, credentials.host);
-var redis_client = redis.createClient(credentials.port, credentials.host);
-if ('password' in credentials) {
+var subscriber = redis.createClient( credentials.port, credentials.host );
+var redis_client = redis.createClient( credentials.port, credentials.host );
+if (credentials.hasOwnProperty('password') ) {
 
 	subscriber.auth(credentials.password);
 	redis_client.auth(credentials.password);
 }
 
-var users = [];
+//var users = [];
 var total_users_online = 0;
 var def_channel = '#random';
 var users_online_list_name = 'dhtmlxNodeChat_users_online';
 
-var passport = require('passport');
-var Authentication = require('./authentication');
+//var passport = require('passport');
+//var Authentication = require('./authentication');
 
 try
 {
 	redis_client.del(users_online_list_name, function(err, reply) {
-		
-		if( err ) throw err;
+		'use strict';
+		if( err ) { throw err; }
 
 		console.log(reply);
-		console.log('The online list users was restarted')
+		console.log('The online list users was restarted');
 	});
 }
 catch(e)
 {
-
+	console.log(e);
 }
 
 
@@ -85,12 +109,14 @@ app.use(express.static(__dirname + '/public'));
 //} );
 
 app.get('/', function(req, res, next) {
+	'use strict';
 	res.send('Hello World!');
 	//console.log('get route', req.testing);
 	res.end();
 });
 
 subscriber.on("message", function(channel, message) {
+	'use strict';
 	//message.channel = channel;
 	var aWss = expressWs.getWss('/');
 	aWss.clients.forEach(function(client) {
@@ -101,10 +127,15 @@ subscriber.on("message", function(channel, message) {
 
 
 app.ws('/', function(ws, req) {
+	'use strict';
 	var client_id = Math.random(),
 		person_entity = null,
-		publisher = redis.createClient(),
+		publisher = redis.createClient( credentials.port, credentials.host ),
 		mstring = null;
+
+	if (credentials.hasOwnProperty('password') ) {
+		publisher.auth(credentials.password);
+	}
 
 	subscriber.subscribe(def_channel);
 
@@ -131,8 +162,8 @@ app.ws('/', function(ws, req) {
 					//console.log(reply);
 					total_users_online = reply;
 					redis_client.lrange(users_online_list_name, 0, -1, function(err, reply) {
-						var users = [];
-						for (var index = 0; index < reply.length; index++) {
+						var users = [], index;
+						for (index = 0; index < reply.length; index++) {
 							var user = JSON.parse(reply[index]);
 							users.push(user);
 						}
@@ -147,8 +178,8 @@ app.ws('/', function(ws, req) {
 		else if (msg.type == "disconnect") 
 		{
 			redis_client.lrange(users_online_list_name, 0, -1, function(err, reply) {
-				var users = [];
-				for (var index = 0; index < reply.length; index++) {
+				var users = [], index;
+				for (index = 0; index < reply.length; index++) {
 						var user = JSON.parse(reply[index]);
 						users.push(user);
 				}
