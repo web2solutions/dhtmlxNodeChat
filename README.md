@@ -2,6 +2,8 @@
 
 Just a simple chat built using DHTMLX on client and Node.js (Express + ws) && Redis on back end
 
+[demo](http://dhtmlx-node-chat.mybluemix.net/)
+
 
 ## Installation
 
